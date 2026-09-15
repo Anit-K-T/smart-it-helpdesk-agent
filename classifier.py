@@ -17,6 +17,7 @@ def classify_issue(text):
         "account locked",
         "login help",
         "login",
+        "password not working",
         "login issue"
     ]
     network_keywords = [
@@ -28,6 +29,7 @@ def classify_issue(text):
         "router",
         "connection",
         "disconnecting",
+        "network connection",
         "offline"
     ]
 
@@ -39,6 +41,8 @@ def classify_issue(text):
         "freezing",
         "hanging",
         "performance",
+        "hanging",
+        "hang"
     ]
 
     application_keywords = [
@@ -55,7 +59,7 @@ def classify_issue(text):
 # Check PASSWORD
     for keywords in passwords_keywords:
         if keywords in text:
-            return "PASSWORD"
+            return "LOGIN ISSUE"
 
 # Check NETWORK
     for keywords in network_keywords:
@@ -74,9 +78,3 @@ def classify_issue(text):
 
 # If nothing matches
     return "UNKNOWN"
-
-
-
-
-
-

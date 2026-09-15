@@ -71,7 +71,7 @@ def update_user(user_id, updates):
 
             save_data(data)
 
-            print("User updated successfully.")
+            
             return True
 
     print("User not found.")
@@ -108,7 +108,6 @@ def add_ticket(ticket):
 
     save_data(data)
 
-    print("Ticket created successfully.")
 
 
 # GET ONE TICKET
@@ -140,7 +139,6 @@ def update_ticket(ticket_id, updates):
 
             save_data(data)
 
-            print("Ticket updated successfully.")
             return True
 
     print("Ticket not found.")

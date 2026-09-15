@@ -1,14 +1,14 @@
 
-from agent import run_agent
+from agent import run_helpdesk_agent
 from memory import get_user
 from classifier import classify_issue
 
 
-print("======================================")
-print("       SMART IT HELPDESK AGENT")
-print("======================================")
+print("\n==============================================")
+print("       WELCOME TO SMART IT HELPDESK AGENT")
+print("================================================")
 
-print("\nWelcome to the Smart IT Helpdesk.")
+
 
 while True:
 
@@ -33,9 +33,10 @@ while True:
 
     while not user:
 
-        print("\nUser not found.")
-        print("Please enter a valid USER ID.")
-
+        print("\n⚠ User ID verification failed.")
+        print("Please enter a valid User ID to continue.\n")
+        print("(Check capslock and ensure you are using the correct User ID.)")
+        print("\n--------------------------------------")
         user_id = input(
             "Enter your USER ID (or type 'exit'): "
         ).strip()
@@ -47,24 +48,28 @@ while True:
 
         user = get_user(user_id)
 
-    print("\nUser found successfully!")
-
+    print(f"\nWelcome, {user['name']}! 👋")
+    print("I'm here to help you resolve your IT issue.\n")
     # -----------------------------
     # GET PROBLEM
     # -----------------------------
     description = input(
-        "Describe your IT problem: "
+        "What IT issue are you experiencing? \n(Describe the problem in detail or type 'exit' to quit): "
     ).strip()
-
-    if not description:
-        print("Please enter a problem.")
-        continue
+    if description.lower() == "exit":
+        print("\nThank you. Goodbye!")
+        break
+    while not description:
+        print("\nPlease enter a problem.")
+        description = input(
+            "What IT issue are you experiencing? \n(Describe the problem in detail or type 'exit' to quit): "
+        ).strip()
 
     # -----------------------------
     # SEND TO AGENT
     # -----------------------------
     issue_type = classify_issue(description)
-    result = run_agent(
+    result = run_helpdesk_agent(
         user_id,
         issue_type,
         description
@@ -75,15 +80,14 @@ while True:
     # -----------------------------
     if result == "resolved":
 
-        print("\n✓ Ticket completed successfully.")
+        print("\n✓ Ticket completed successfully. Thank you, " + user['name'] + "! Goodbye!")
 
     elif result == "escalated":
 
-        print("\n⚠ Your ticket has been sent to human IT support.")
+        print("\n⚠ Your ticket has been sent to human IT support. Thank you for your patience, " + user['name'] + ". Goodbye!")
 
-    elif result == "unknown":
+    else:
 
-        print("\nSorry, I could not identify your problem.")
-        print("Please describe the problem in more detail.")
+        print("Contact human IT support for further assistance, " + user['name'] + ".")
 
 

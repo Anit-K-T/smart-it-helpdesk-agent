@@ -1,159 +1,227 @@
-# #hello
-# # --- Tools / Actions Module (tools.py) ---
-# from memory import get_user
-# def password_help():
-#     """Tool for password reset using multi-step security verification."""
-#     print("\n[IT Tool: Password Helper]")
-#     print("-> Action: Initiating identity verification protocol...")
-    
-#     dob = input("2. Enter your Date of Birth (YYYY-MM-DD): ").strip()
-#     if dob != user["dob"]:  # Simulated valid DOB
-#         print("-> Verification failed: Date of birth does not match records.")
-#         return False
-        
-#     print("-> Security verification passed successfully.")
-#     print("-> Action: Temporary password generated: TempPass#2026")
-    
-#     success = input("Were you able to log in with this temporary password? (yes/no): ").strip().lower()
-#     return success == "yes"
+from memory import get_user, update_user
+import random, string
 
-
-# # def network_help():
-# #    """Tool for network troubleshooting."""
-# #     print("\n[IT Tool: Network Troubleshooter]")
-# #     print("-> Action: Running automated diagnostic script on your local network interface...")
-# #     print("-> Instruction: Please disconnect from VPN, toggle your Wi-Fi off and on, and reconnect.")
-    
-# #     success = input("Did this resolve your internet issue? (yes/no): ").strip().lower()
-# #     return success == "yes"
-
-# def network_help():
-#     """Tool for multi-step network troubleshooting."""
-#     print("\n[IT Tool: Network Troubleshooter]")
-#     print("-> Action: Running automated diagnostic script on your local network interface...")
-    
-#     # --- Step 1: Initial Troubleshooting Instruction ---
-#     print("-> Instruction 1: Please disconnect from VPN, toggle your Wi-Fi off and on, and reconnect.")
-#     success = input("Did this resolve your internet issue? (yes/no): ").strip().lower()
-    
-#     if success == "yes":
-
-#         return True
-#   else:
-        
-#     # --- Step 2: Secondary Instruction (Triggered if Step 1 fails) ---
-#     print("\n[IT Tool: Network Troubleshooter - Advanced Step]")
-#     print("-> Action: Initial step failed. Applying secondary diagnostic fix...")
-#     print("-> Instruction 2: Please open your terminal/command prompt, run 'ipconfig /flushdns', and restart your computer's network adapter.")
-    
-#     success_second = input("Did this secondary step resolve your internet issue? (yes/no): ").strip().lower()
-#     return success_second == "yes"
-
-
-
-
-# # def performance_help():
-# #     """Tool for slow laptop optimization."""
-# #     print("\n[IT Tool: Performance Optimizer]")
-# #     print("-> Action: Clearing temporary system cache and analyzing background resource hogs.")
-# #     print("-> Instruction: Please close unused browser tabs and save your work for a quick system restart.")
-    
-# #     success = input("Did this resolve your laptop speed issue? (yes/no): ").strip().lower()
-# #     return success == "yes"
-
-
-# def performance_help():
-#     """Tool for multi-step slow laptop optimization."""
-#     print("\n[IT Tool: Performance Optimizer]")
-#     print("-> Action: Analyzing background resource hogs and system memory...")
-    
-#     # --- Step 1: Initial Troubleshooting Instruction ---
-#     print("-> Instruction 1: Please close unused browser tabs and save your work for a quick system restart.")
-#     success = input("Did this resolve your laptop speed issue? (yes/no): ").strip().lower()
-    
-#     if success == "yes":
-#         return True
-        
-#     # --- Step 2: Secondary Instruction (Triggered if Step 1 fails) ---
-#     print("\n[IT Tool: Performance Optimizer - Advanced Step]")
-#     print("-> Action: Initial step failed. Applying secondary resource management fix...")
-#     print("-> Instruction 2: Please open Task Manager (or Activity Monitor), identify processes consuming high CPU or RAM, and end those tasks.")
-    
-#     success_second = input("Did this secondary step resolve your laptop speed issue? (yes/no): ").strip().lower()
-#     return success_second == "yes"
-
-
-
-# # --- Escalation Tool ---
-
-# def escalate_to_human(issue_type, attempts):
-#     """Escalation path when automated tools fail."""
-#     print("\n[IT Support System - Escalation Triggered]")
-#     print(f"⚠️ Automated tools could not resolve your '{issue_type}' issue after {attempts} attempts.")
-#     print("-> Action: Creating high-priority support ticket #9941 and notifying the On-Call IT Helpdesk.")
-#     print("-> Notice: A human support technician will reach out to you via chat or phone shortly.")
-
-
-# ============================================================
-# SMART IT HELPDESK AGENT
-# THREE TOOLS / ACTIONS
-# ============================================================
-#
-# INDEX
-# ------------------------------------------------------------
-# 1. Password Help Tool
-# 2. Network Help Tool
-# 3. Performance Help Tool
-# 4. Human Escalation Tool
-# ============================================================
-
-
-# ============================================================
-# 1. PASSWORD HELP TOOL
-# ============================================================
-
-def password_help(user):
-    """
-    Tool for solving password/login problems.
-    """
-
+def password_help(user_id=None):
     print("\n[IT TOOL: PASSWORD HELPER]")
 
-    # Ask the user for their Date of Birth
-    dob = input(
+    # Get the user record from memory
+    user_record = get_user(user_id)
+
+    if not user_record:
+        print("-> User record not found.")
+        return False
+
+    print(
+        f"Initiating verification protocol..."
+    )
+
+    # ========================================================
+    # ATTEMPT 1: SECURITY QUESTIONS
+    # ========================================================
+
+    print("\n----Attempt 1 of 2----")
+    print("\n[Attempt 1: Security Verification]")
+
+    dob_input = input(
         "Enter your Date of Birth (YYYY-MM-DD): "
     ).strip()
 
-    # Check whether the entered DOB matches the user's record
-    if dob == user["dob"]:
+    color_input = input(
+        "Enter your Favorite Color: "
+    ).strip().capitalize()
 
-        print("\n✓ Identity verification successful.")
-        print("-> Temporary password generated.")
-        print("-> Please use the temporary password to log in.")
+    place_input = input(
+        "Enter your Birthplace / Hometown: "
+    ).strip().capitalize()
+    actions = ["Performed basic security verification using DOB, favorite color, and birthplace.",]
+    questions_correct = (
+        dob_input == user_record.get("dob") and
+        color_input == user_record.get(
+            "fav_color", ""
+        ).capitalize() and
+        place_input == user_record.get(
+            "place", ""
+        ).capitalize()
+    )
 
-        # Ask whether the problem is solved
+    # ========================================================
+    # SECURITY VERIFICATION SUCCESS
+    # ========================================================
+
+    if questions_correct:
+
+        print(
+            "\n-> Security verification passed successfully!"
+        )
+
+        # Generate temporary password
+        temp_pass = (
+            "TempPass#"
+            + "".join(
+                random.choices(
+                    string.digits,
+                    k=4
+                )
+            )
+        )
+
+        print(
+            f"-> Temporary password generated: {temp_pass}"
+        )
+
+        # Store temporary password in memory.json
+        update_user(
+            user_id,
+            {
+                "temporary_password": temp_pass
+            }
+        )
+
         success = input(
-            "Were you able to log in? (yes/no): "
+            "Were you able to log in with this temporary password? "
+            "(yes/no): "
         ).strip().lower()
 
+
         if success == "yes":
-            return True
-        else:
-            return False
+            solution = "Password reset successful via security verification."
+            
+            return True, solution, actions
+
+        print(
+            "-> Attempt 1 failed to resolve the issue."
+        )
+        
 
     else:
 
-        print("\n✗ Verification failed.")
-        print("-> Date of Birth does not match our records.")
+        print(
+            "-> Verification failed: One or more security "
+            "answers do not match company records."
+        )
 
-        return False
+    # ========================================================
+    # ATTEMPT 2: OTP FALLBACK
+    # ========================================================
+
+    print("\n----Attempt 2 of 2----")
+    print("\n[Attempt 2: OTP Fallback Protocol]")
+
+    print(
+        "-> Generating One-Time Password (OTP)..."
+    )
+    actions.append("Performed OTP fallback verification after security questions failed.")
+
+    email_input = input(
+        "Enter your registered email to receive the OTP : "
+    )
+    email_record = user_record.get("email", "")
+    if email_input.strip().lower() != email_record.lower():
+        email_input = input(
+                "\nEnter valid registered email to receive the OTP : "
+            )
+        if email_input.strip().lower() != email_record.lower():
+                print(
+                    "-> Error: The entered email does not match our records."
+                )
+                solution = "Password reset failed due to email mismatch during OTP fallback. Escalation to human support is recommended."
+                return False, solution, actions
+        else:
+                print(
+                    "\n-> Email verified successfully."
+                )
+
+
+                
+    # Generate 4-digit OTP
+    otp_code = "".join(
+        random.choices(
+            string.digits,
+            k=4
+        )
+    )
+
+    # Store OTP in memory.json
+    update_user(
+        user_id,
+        {
+            "otp": otp_code
+        }
+    )
+
+    # Display OTP for demonstration
+    print(
+        f"-> [SIMULATED OTP]: {otp_code}"
+    )
+
+    otp_input = input(
+        "Please enter the OTP provided by the system: "
+    ).strip()
+
+    # ========================================================
+    # OTP VERIFICATION
+    # ========================================================
+
+    if otp_code == otp_input:
+
+        print(
+            "-> OTP verified successfully!"
+        )
+
+        # Generate temporary password
+        temp_pass = (
+            "TempPass#"
+            + "".join(
+                random.choices(
+                    string.digits,
+                    k=4
+                )
+            )
+        )
+
+        print(
+            f"-> Temporary password generated: {temp_pass}"
+        )
+
+        # Store temporary password in memory.json
+        update_user(
+            user_id,
+            {
+                "temporary_password": temp_pass
+            }
+        )
+
+        success = input(
+            "Were you able to log in with this temporary password? "
+            "(yes/no): "
+        ).strip().lower()
+
+        if success == "yes":
+            solution = "Password reset successful via OTP verification."
+            return True, solution, actions
+
+        print(
+            "-> Attempt 2 failed to resolve the issue."
+        )
+        solution = "Password reset failed after OTP verification. Escalation to human support is recommended."
+        return False, solution, actions
+
+    else:
+
+        print(
+            "-> Error: Invalid OTP entered."
+        )
+        solution = "Password reset failed due to invalid OTP. Escalation to human support is recommended."
+        return False, solution, actions
+
+
 
 
 # ============================================================
 # 2. NETWORK HELP TOOL
 # ============================================================
 
-def network_help():
+def network_help(user_id=None):
     """
     Tool for solving Wi-Fi and internet problems.
     """
@@ -163,13 +231,13 @@ def network_help():
     # -----------------------------
     # STEP 1
     # -----------------------------
-
+    print("----Attempt 1 of 2----")
     print("\nStep 1: Basic Network Troubleshooting")
 
     print("-> Turn Wi-Fi OFF and ON.")
     print("-> Disconnect from VPN.")
     print("-> Reconnect to the Wi-Fi network.")
-
+    actions = ["Performed basic network troubleshooting steps: toggled Wi-Fi, disconnected VPN, and reconnected to Wi-Fi."]
     success = input(
         "Did this resolve your internet issue? (yes/no): "
     ).strip().lower()
@@ -177,7 +245,7 @@ def network_help():
     if success == "yes":
         solution= "Basic network troubleshooting was successful."
 
-        return True, solution
+        return True, solution, actions
 
     else:
 
@@ -186,11 +254,13 @@ def network_help():
         # -----------------------------
 
         print("\nStep 1 was not successful.")
+        print("----Attempt 2 of 2----")
         print("\nStep 2: Advanced Network Troubleshooting")
 
         print("-> Restart the network adapter.")
         print("-> Forget and reconnect to Wi-Fi.")
         print("-> Restart the computer.")
+        actions.append("Performed advanced network troubleshooting steps: restarted network adapter, forgot and reconnected to Wi-Fi, and restarted the computer.")
 
         success = input(
             "Did this resolve your internet issue? (yes/no): "
@@ -198,16 +268,17 @@ def network_help():
 
         if success == "yes":
             solution= "Advanced network troubleshooting was successful."
-            return True, solution
+            return True, solution, actions
         else:
-            return False
+            solution = "Network troubleshooting failed. Escalation to human support is recommended."
+            return False, solution, actions
 
 
 # ============================================================
 # 3. PERFORMANCE HELP TOOL
 # ============================================================
 
-def performance_help():
+def performance_help(user_id=None):
     """
     Tool for solving slow laptop problems.
     """
@@ -217,12 +288,14 @@ def performance_help():
     # -----------------------------
     # STEP 1
     # -----------------------------
+    print("----Attempt 1 of 2----")
 
     print("\nStep 1: Basic Performance Troubleshooting")
 
     print("-> Close unused applications.")
     print("-> Close unnecessary browser tabs.")
     print("-> Restart the laptop.")
+    actions = ["Performed basic performance troubleshooting steps: closed unused applications, closed unnecessary browser tabs, and restarted the laptop."]
 
     success = input(
         "Did this improve your laptop performance? (yes/no): "
@@ -231,7 +304,7 @@ def performance_help():
     if success == "yes":
         solution= "Basic performance troubleshooting was successful."
 
-        return True, solution
+        return True, solution, actions
     
 
     else:
@@ -241,11 +314,13 @@ def performance_help():
         # -----------------------------
 
         print("\nStep 1 was not successful.")
+        print("----Attempt 2 of 2----")
         print("\nStep 2: Advanced Performance Troubleshooting")
 
         print("-> Open Task Manager.")
         print("-> Check applications using high CPU or RAM.")
         print("-> Close unnecessary applications.")
+        actions.append("Performed advanced performance troubleshooting steps: opened Task Manager, checked applications using high CPU or RAM, and closed unnecessary applications.")
 
         success = input(
             "Did this resolve your laptop speed issue? (yes/no): "
@@ -253,9 +328,80 @@ def performance_help():
 
         if success == "yes":
             solution= "Advanced performance troubleshooting was successful."
-            return True, solution
+            return True, solution, actions
         else:
-            return False
+            solution = "Performance troubleshooting failed. Escalation to human support is recommended."
+            return False, solution, actions
+
+
+def application_help(user_id=None):
+
+    print("\n[IT TOOL: APPLICATION TROUBLESHOOTER]")
+
+    # -----------------------------
+    # STEP 1
+    # -----------------------------
+    print("----Attempt 1 of 2----")
+    print("\nStep 1: Basic Application Troubleshooting")
+
+    application = input(
+    "Which application is having the problem? "
+    ).strip()
+
+    print(f"-> Close and reopen {application}.")
+    print("-> Check whether the application is responding.")
+    print("-> Check whether the application is updated.")
+    actions = [f"Performed basic application troubleshooting steps for {application}: closed and reopened the application, checked responsiveness, and checked for updates."]
+
+    success = input(
+    f"Did this resolve your {application} issue? (yes/no): "
+    ).strip().lower()
+
+    if success == "yes":
+        solution = (
+            f"Basic troubleshooting for {application} "
+            "was successful."
+        )
+
+        return True, solution, actions
+
+    else:
+
+    # -----------------------------
+    # STEP 2
+    # -----------------------------
+
+        print("\nStep 1 was not successful.")
+        print("----Attempt 2 of 2----")
+        print("\nStep 2: Advanced Application Troubleshooting")
+
+        print(f"-> Restart the computer.")
+        print(f"-> Check for pending updates for {application}.")
+        print(f"-> Repair or reinstall {application}.")
+        print(f"-> Open the application again.")
+        actions.append(f"Performed advanced application troubleshooting steps for {application}: restarted the computer, checked for updates, repaired or reinstalled the application, and reopened the application.")
+
+        success = input(
+            f"Did this resolve your {application} issue? (yes/no): "
+        ).strip().lower()
+
+        if success == "yes":
+            solution = (
+                f"Advanced troubleshooting for {application} "
+                "was successful."
+            )
+
+            return True, solution, actions
+
+        else:
+            solution = (
+                f"Application troubleshooting for {application} "
+                "failed. Escalation to human support is recommended."
+            )
+
+            return False, solution, actions
+
+
 
 
 # ============================================================
@@ -281,3 +427,22 @@ def escalate_to_human(issue_type, attempts):
 
     print("\n-> Escalating the issue to human IT support.")
     print("-> A support technician will contact the employee.")
+
+def unknown_help(user_id=None):
+    """
+    Handle unknown issues that cannot be classified.
+    """
+
+    
+    print("\n    UNKNOWN ISSUE DETECTED - ESCALATION REQUIRED")
+
+
+    actions = ["The issue is unknown and could not be classified or resolved by automated tools. Escalation to human support is required."]
+
+    solution = (
+        "The issue is unknown and could not be classified or resolved "
+        "by automated tools. Escalation to human support is required."
+    )
+    return False, solution, actions
+
+    

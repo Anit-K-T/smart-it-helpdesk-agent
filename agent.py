@@ -29,7 +29,9 @@ from Three_Tools import (
     password_help,
     network_help,
     performance_help,
-    escalate_to_human
+    application_help,
+    escalate_to_human,
+    unknown_help
 )
 
 # Import the issue classification function.
@@ -82,7 +84,6 @@ def create_ticket(ticket, user_id, issue_type, description):
         "problem_type": issue_type,
         "description": description,
         "status": "Open",
-        "severity": "Medium",
         "actions_taken": [],
         "solution": None,
         "escalated": False
@@ -140,7 +141,7 @@ def select_tool(issue_type):
 
     # If the problem is related to a password,
     # select the password troubleshooting tool.
-    if issue_type.lower() == "password":
+    if issue_type.lower() == "login issue":
         return password_help
         
 
@@ -154,6 +155,11 @@ def select_tool(issue_type):
     elif issue_type.lower() == "performance":
         return performance_help
 
+    elif issue_type.lower() == "application":
+        return application_help
+    
+    elif issue_type.lower() == "unknown":
+        return unknown_help
     # If no matching tool is available,
     # return None.
     else:
@@ -164,19 +170,11 @@ def select_tool(issue_type):
 # 6. MAIN AGENT CONTROLLER
 # ============================================================
 
-def run_agent(user_id, issue_type, description):
+def run_helpdesk_agent(user_id, issue_type, description):
 
     # --------------------------------------------------------
     # Display the Smart IT Helpdesk Agent header.
     # --------------------------------------------------------
-
-    print("\n===================================")
-    print("       SMART IT HELPDESK AGENT")
-    print("===================================")
-
-    # Display the problem type detected by the system.
-    print(f"\nProblem detected: {issue_type}")
-
 
     # --------------------------------------------------------
     # 6.1 CREATE TICKET
@@ -194,53 +192,74 @@ def run_agent(user_id, issue_type, description):
     )
 
     # Display the generated ticket ID.
-    print(f"Ticket created: {ticket_id}")
+    print(f"\n✓ Support ticket created successfully. Ticket ID: {ticket}")
+
+    print("\n====================================")
+    print("       --- Diagnosis in Progress ---")
+    print("====================================")
+
+    # Display the problem type detected by the system.
+    print(f"\nProblem detected: {issue_type}")
+    if issue_type.lower() == "unknown":
+        description = input(
+            "\nI couldn't identify the problem type. Please describe your issue in detail: "
+        ).strip()
+        issue_type = classify_issue(description)
+        update_ticket(
+            ticket_id,
+            {
+                "problem_type": issue_type,
+                "description": description
+            }
+        )
+        print(f"\nProblem detected: {issue_type}")
+
+    
 
 
     # --------------------------------------------------------
     # 6.2 SELECT TOOL
     # --------------------------------------------------------
 
+
     # Select the appropriate troubleshooting tool
     # based on the issue type.
     tool = select_tool(issue_type)
+
 
     # If there is no suitable tool,
     # return an unknown result.
     if tool is None:
 
-        print("\nSorry, I don't have a tool for this problem.")
+        print("\n⚠ I'm unable to determine the appropriate support tool for this issue.")
 
         return "unknown"
 
 
+
     # --------------------------------------------------------
-    # 6.3 ATTEMPT 1
+    # 6.3 TROUBLESHOOTING ATTEMPTS
     # --------------------------------------------------------
 
-    print("\n--- Attempt 1 ---")
 
     # Execute the selected troubleshooting tool.
-    result, solution = tool()
-    print(result)
-    print(solution)
+    result, solution, actions = tool(user_id)
 
     # Record the action performed during Attempt 1.
-    actions = [
-        f"{tool.__name__} - Attempt 1"
-    ]
+    
 
     # Update the ticket memory with the action performed.
     update_ticket(
         ticket_id,
         {
-            "actions_taken": actions
+            "actions_taken": actions,
+            "solution": solution
         }
     )
 
     # Check whether the first troubleshooting attempt
     # successfully resolved the issue.
-    if result:
+    if result==True:
 
         # Update the ticket status to Resolved.
         update_ticket(
@@ -257,54 +276,9 @@ def run_agent(user_id, issue_type, description):
         return "resolved"
 
 
-    # --------------------------------------------------------
-    # 6.4 ATTEMPT 2
-    # --------------------------------------------------------
-
-    # Inform the user that the first attempt failed.
-    print("\n--- Attempt 1 was not successful ---")
-
-    print("Let's try another approach.")
-
-    print("\n--- Attempt 2 ---")
-
-    # Execute the troubleshooting tool again.
-    # This represents the second decision/action path.
-    result = tool()
-
-    # Record Attempt 2 in the agent's memory.
-    actions.append(
-        f"{tool.__name__} - Attempt 2"
-    )
-
-    # Update the ticket with both actions.
-    update_ticket(
-        ticket_id,
-        {
-            "actions_taken": actions
-        }
-    )
-
-    # Check whether Attempt 2 successfully resolved the problem.
-    if result:
-
-        # Update the ticket as resolved.
-        update_ticket(
-            ticket_id,
-            {
-                "status": "Resolved",
-                "solution": solution
-            }
-        )
-
-        print("\n✓ Issue resolved successfully.")
-
-        # Stop the agent because the problem has been solved.
-        return "resolved"
-
 
     # --------------------------------------------------------
-    # 6.5 ESCALATION
+    # 6.4 ESCALATION
     # --------------------------------------------------------
 
     # Both automated attempts failed.
@@ -329,3 +303,62 @@ def run_agent(user_id, issue_type, description):
 
     # Return the final status to main.py.
     return "escalated"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# # --------------------------------------------------------
+    # # 6.4 ATTEMPT 2
+    # # --------------------------------------------------------
+
+    # # Inform the user that the first attempt failed.
+    # print("\n--- Attempt 1 was not successful ---")
+
+    # print("Let's try another approach.")
+
+    # print("\n--- Attempt 2 ---")
+
+    # # Execute the troubleshooting tool again.
+    # # This represents the second decision/action path.
+    # result = tool()
+
+    # # Record Attempt 2 in the agent's memory.
+    # actions.append(
+    #     f"{tool.__name__} - Attempt 2"
+    # )
+
+    # # Update the ticket with both actions.
+    # update_ticket(
+    #     ticket_id,
+    #     {
+    #         "actions_taken": actions
+    #     }
+    # )
+
+    # # Check whether Attempt 2 successfully resolved the problem.
+    # if result==True:
+
+    #     # Update the ticket as resolved.
+    #     update_ticket(
+    #         ticket_id,
+    #         {
+    #             "status": "Resolved",
+    #             "solution": solution
+    #         }
+    #     )
+
+    #     print("\n✓ Issue resolved successfully.")
+
+    #     # Stop the agent because the problem has been solved.
+    #     return "resolved"

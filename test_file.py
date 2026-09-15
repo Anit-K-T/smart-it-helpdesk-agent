@@ -1,84 +1,192 @@
-# Smart IT Helpdesk - ISSUE CLASSIFIER
-def classify_issue(text):
+def password_help(user_id=None):
+    print("\n[IT TOOL: PASSWORD HELPER]")
 
-    # Convert the user's input to lowercase
-    # This makes matching easier.
-    # Example: "Wifi" becomes "wifi"
-    text = text.lower()
+    # Get the user record from memory
+    user_record = get_user(user_id)
 
+    if not user_record:
+        print("-> User record not found.")
+        return False
 
-# Keywords for each issue category
-    passwords_keywords = [
-        "password",
-        "forgot password",
-        "reset password",
-        "credentials",
-        "locked account",
-        "account locked",
-        "login help",
-        "login",
-        "login issue"
-    ]
-    network_keywords = [
-        "wifi",
-        "wi-fi",
-        "network issue",
-        "internet",
-        "network",
-        "router",
-        "connection",
-        "disconnecting",
-        "offline"
-    ]
+    print(
+        f"-> Welcome, {user_record['name']}. "
+        "Initiating verification protocol..."
+    )
 
-    performance_keywords = [
-        "slow",
-        "lag",
-        "lagging",
-        "freeze",
-        "freezing",
-        "hanging",
-        "performance",
-    ]
+    # ========================================================
+    # ATTEMPT 1: SECURITY QUESTIONS
+    # ========================================================
 
-    application_keywords = [
-        "application",
-        "app",
-        "software",
-        "outlook",
-        "teams",
-        "excel",
-        "sap",
-        "servicenow"
-    ]
+    print("\n----Attempt 1 of 2----")
+    print("\n[Attempt 1: Security Verification]")
 
-# Check PASSWORD
-    for keywords in passwords_keywords:
-        if keywords in text:
-            return "PASSWORD"
+    dob_input = input(
+        "Enter your Date of Birth (YYYY-MM-DD): "
+    ).strip()
 
-# Check NETWORK
-    for keywords in network_keywords:
-        if keywords in text:
-            return "NETWORK"
+    color_input = input(
+        "Enter your Favorite Color: "
+    ).strip().capitalize()
 
-# Check PERFORMANCE
-    for keywords in performance_keywords:
-        if keywords in text:
-            return "PERFORMANCE"
+    place_input = input(
+        "Enter your Birthplace / Hometown: "
+    ).strip().capitalize()
 
-# Check APPLICATION
-    for keywords in application_keywords:
-        if keywords in text:
-            return "APPLICATION"
+    questions_correct = (
+        dob_input == user_record.get("dob") and
+        color_input == user_record.get(
+            "fav_color", ""
+        ).capitalize() and
+        place_input == user_record.get(
+            "place", ""
+        ).capitalize()
+    )
 
-# If nothing matches
-    return "UNKNOWN"
+    # ========================================================
+    # SECURITY VERIFICATION SUCCESS
+    # ========================================================
 
+    if questions_correct:
 
-# ----------------------
-# TEST THE CLASSIFIER
-# ----------------------
-user_input = input("Describe your IT problem")
-result = classify_issue(user_input)
-print("Issue detected:", result)
+        print(
+            "\n-> Security verification passed successfully!"
+        )
+
+        # Generate temporary password
+        temp_pass = (
+            "TempPass#"
+            + "".join(
+                random.choices(
+                    string.digits,
+                    k=4
+                )
+            )
+        )
+
+        print(
+            f"-> Temporary password generated: {temp_pass}"
+        )
+
+        # Store temporary password in memory.json
+        update_user(
+            user_id,
+            {
+                "temporary_password": temp_pass
+            }
+        )
+
+        success = input(
+            "Were you able to log in with this temporary password? "
+            "(yes/no): "
+        ).strip().lower()
+
+        if success == "yes":
+            return True
+
+        print(
+            "-> Attempt 1 failed to resolve the issue."
+        )
+
+    else:
+
+        print(
+            "-> Verification failed: One or more security "
+            "answers do not match company records."
+        )
+
+    # ========================================================
+    # ATTEMPT 2: OTP FALLBACK
+    # ========================================================
+
+    print("\n----Attempt 2 of 2----")
+    print("\n[Attempt 2: OTP Fallback Protocol]")
+
+    print(
+        "-> Generating One-Time Password (OTP)..."
+    )
+
+    input(
+        "Enter your registered email to receive the OTP "
+        "(simulated): "
+    )
+
+    # Generate 4-digit OTP
+    otp_code = "".join(
+        random.choices(
+            string.digits,
+            k=4
+        )
+    )
+
+    # Store OTP in memory.json
+    update_user(
+        user_id,
+        {
+            "otp": otp_code
+        }
+    )
+
+    # Display OTP for demonstration
+    print(
+        f"-> [SIMULATED OTP]: {otp_code}"
+    )
+
+    otp_input = input(
+        "Please enter the OTP provided by the system: "
+    ).strip()
+
+    # ========================================================
+    # OTP VERIFICATION
+    # ========================================================
+
+    if otp_code == otp_input:
+
+        print(
+            "-> OTP verified successfully!"
+        )
+
+        # Generate temporary password
+        temp_pass = (
+            "TempPass#"
+            + "".join(
+                random.choices(
+                    string.digits,
+                    k=4
+                )
+            )
+        )
+
+        print(
+            f"-> Temporary password generated: {temp_pass}"
+        )
+
+        # Store temporary password in memory.json
+        update_user(
+            user_id,
+            {
+                "temporary_password": temp_pass
+            }
+        )
+
+        success = input(
+            "Were you able to log in with this temporary password? "
+            "(yes/no): "
+        ).strip().lower()
+
+        if success == "yes":
+            return True
+
+        print(
+            "-> Attempt 2 failed to resolve the issue."
+        )
+
+        return False
+
+    else:
+
+        print(
+            "-> Error: Invalid OTP entered."
+        )
+
+        return False
+
